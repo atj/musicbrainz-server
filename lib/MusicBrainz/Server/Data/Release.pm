@@ -1387,11 +1387,13 @@ sub newest_releases_with_artwork {
     my $self = shift;
     my $query = '
       SELECT DISTINCT ON (edit.id) ' . $self->_columns . ',
-        cover_art.id AS cover_art_id
+            ' . $self->c->model('Artwork')->columns_as('caa_') . '
       FROM ' . $self->_table . '
       JOIN cover_art_archive.cover_art ON (cover_art.release = release.id)
       JOIN cover_art_archive.cover_art_type
         ON (cover_art.id = cover_art_type.id)
+      JOIN cover_art_archive.image_type
+        ON (image_type.mime_type = cover_art.mime_type)
       JOIN edit_release ON edit_release.release = release.id
       JOIN edit ON edit.id = edit_release.edit
       WHERE cover_art_type.type_id = ?
@@ -1405,13 +1407,8 @@ sub newest_releases_with_artwork {
         my ($model, $row) = @_;
 
         my $release = $model->_new_from_row($row);
-        my $mbid = $release->gid;
-        my $caa_id = $row->{cover_art_id};
 
-        Artwork->new(
-            id => $caa_id,
-            release => $release,
-        );
+        Artwork->_new_from_row($row, 'caa_');
     });
 }
 

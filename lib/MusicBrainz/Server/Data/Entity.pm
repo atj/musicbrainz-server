@@ -28,6 +28,25 @@ sub _column_mapping
     return {};
 }
 
+sub columns_as
+{
+    my ($self, $prefix) = @_;
+
+    my $expressions = $self->_columns;
+    my %replacements = map {
+            my $pattern = $_ =~ s/\./\./gr;
+            my $output_name = $_ =~ s/^(?:.*\.)?([^.]+)/${prefix}$1/r;
+            $pattern => $output_name
+        } split(/\s*,\s*/, $self->_columns);
+
+    for my $pattern (keys %replacements)
+    {
+        $expressions =~ s/\b($pattern)\b/$1 AS $replacements{$pattern}/;
+    }
+
+    return $expressions;
+}
+
 sub _get_by_keys {
     my ($self, $key, @ids) = @_;
 
