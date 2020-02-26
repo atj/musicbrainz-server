@@ -57,7 +57,6 @@ has mime_type => (
 has suffix => (
     is => 'rw',
     isa => 'Str',
-    default => '',
 );
 
 has release_id => (
